@@ -7,7 +7,13 @@ defmodule Servy.Handler do
   end
 
   def parse(rawRequest) do
-    %{method: "GET", path: "/wildthings", resp_body: ""}
+    [method, path|_] =
+      rawRequest
+      |> String.split("\n")
+      |> List.first
+      |> String.split(" ")
+
+    %{method: method, path: path, resp_body: ""}
   end
 
   def route(requestMap) do
