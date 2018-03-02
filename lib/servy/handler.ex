@@ -32,13 +32,17 @@ defmodule Servy.Handler do
     %{request_map | resp_body: "Paddington, Smokey, Teddy", status: 200}
   end
 
+  def route(request_map, "GET", "/bears/" <> id) do
+    %{request_map | resp_body: "Bear #{id}", status: 200}
+  end
+
   def route(request_map, _, path) do
     %{request_map | resp_body: "No resource found at #{path}", status: 404}
   end
 
   def format_response(resposne_map) do
     """
-    HTTP/1.1 #{resposne_map.status} OK
+    HTTP/1.1 #{resposne_map.status} #{status_descrition(resposne_map.status)}
     Content-Type: text/html
     Content-Length: #{String.length(resposne_map.resp_body)}
 
@@ -54,6 +58,6 @@ defmodule Servy.Handler do
       403 => "Forbidden",
       404 => "Not Found",
       500 => "Internal Server Error"
-    }[code]
+    }[status]
   end
 end
