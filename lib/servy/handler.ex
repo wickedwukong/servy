@@ -27,10 +27,6 @@ defmodule Servy.Handler do
       status: nil}
   end
 
-  # def route(request_map) do
-  #   route(request_map, request_map.method, request_map.path)
-  # end
-
   def route(%{method: "GET", path: "/wildthings"} = request_map) do
     # Map.put(request_map, :resp_body, "Bears, Lions, Tigers")
     %{request_map | resp_body: "Bears, Lions, Tigers", status: 200}
@@ -42,6 +38,18 @@ defmodule Servy.Handler do
 
   def route(%{method: "GET", path: "/bears/" <> id} = request_map) do
     %{request_map | resp_body: "Bear #{id}", status: 200}
+  end
+
+  def route(%{method: _, path: "/about"} = request_map) do
+    case File.read("pages/about.html") do
+      {:ok, content} ->
+          %{request_map | resp_body: content, status: 200}
+
+      {:error, :eoent} ->
+          %{request_map | resp_body: "File not found", status: 404}
+      {:error, reason} ->
+          %{request_map | resp_body: "File error: #{reason}", status: 500}
+    end
   end
 
   def route(%{method: _, path: path} = request_map) do
@@ -125,6 +133,19 @@ IO.puts response
 
 request = """
 GET /wildlife HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+response = Servy.Handler.handle(request)
+
+IO.puts response
+
+
+request = """
+GET /about HTTP/1.1
 Host: example.com
 User-Agent: ExampleBrowser/1.0
 Accept: */*
