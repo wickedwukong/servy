@@ -2,9 +2,17 @@ defmodule Servy.Handler do
   def handle(request) do
     request
     |> parse
+    |> rewrite_path
+    |> log
     |> route
     |> format_response
   end
+
+  def rewrite_path(%{method: "GET", path: "/wildlife"} = request_map) do
+    %{request_map | path: "/wildthings"}
+  end
+
+  def rewrite_path(request_map), do: request_map
 
   def parse(raw_request) do
     [method, path|_] =
@@ -19,24 +27,24 @@ defmodule Servy.Handler do
       status: nil}
   end
 
-  def route(request_map) do
-    route(request_map, request_map.method, request_map.path)
-  end
+  # def route(request_map) do
+  #   route(request_map, request_map.method, request_map.path)
+  # end
 
-  def route(request_map, "GET", "/wildthings") do
+  def route(%{method: "GET", path: "/wildthings"} = request_map) do
     # Map.put(request_map, :resp_body, "Bears, Lions, Tigers")
     %{request_map | resp_body: "Bears, Lions, Tigers", status: 200}
   end
 
-  def route(request_map, "GET", "/bears") do
+  def route(%{method: "GET", path: "/bears"} = request_map) do
     %{request_map | resp_body: "Paddington, Smokey, Teddy", status: 200}
   end
 
-  def route(request_map, "GET", "/bears/" <> id) do
+  def route(%{method: "GET", path: "/bears/" <> id} = request_map) do
     %{request_map | resp_body: "Bear #{id}", status: 200}
   end
 
-  def route(request_map, _, path) do
+  def route(%{method: _, path: path} = request_map) do
     %{request_map | resp_body: "No resource found at #{path}", status: 404}
   end
 
@@ -60,4 +68,69 @@ defmodule Servy.Handler do
       500 => "Internal Server Error"
     }[status]
   end
+
+  def log(conv), do: IO.inspect conv
+
 end
+
+
+
+request = """
+GET /wildthings HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+response = Servy.Handler.handle(request)
+
+IO.puts response
+
+request = """
+GET /bears HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+response = Servy.Handler.handle(request)
+
+IO.puts response
+
+request = """
+GET /bigfoot HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+response = Servy.Handler.handle(request)
+
+IO.puts response
+
+request = """
+GET /bears/1 HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+response = Servy.Handler.handle(request)
+
+IO.puts response
+
+request = """
+GET /wildlife HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+
+"""
+
+response = Servy.Handler.handle(request)
+
+IO.puts response
