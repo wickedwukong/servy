@@ -1,6 +1,7 @@
 defmodule Servy.Handler do
   @pages_path Path.expand("../../pages", __DIR__)
-
+  import Servy.Plugins, only: [rewrite_path: 1, log: 1]
+  import Servy.Parser, only: [parse: 1]
   def handle(request) do
     request
     |> parse
@@ -8,25 +9,6 @@ defmodule Servy.Handler do
     |> log
     |> route
     |> format_response
-  end
-
-  def rewrite_path(%{method: "GET", path: "/wildlife"} = request_map) do
-    %{request_map | path: "/wildthings"}
-  end
-
-  def rewrite_path(request_map), do: request_map
-
-  def parse(raw_request) do
-    [method, path|_] =
-      raw_request
-      |> String.split("\n")
-      |> List.first
-      |> String.split(" ")
-
-    %{method: method,
-      path: path,
-      resp_body: "",
-      status: nil}
   end
 
   def route(%{method: "GET", path: "/wildthings"} = request_map) do
@@ -103,7 +85,6 @@ defmodule Servy.Handler do
     }[status]
   end
 
-  def log(conv), do: IO.inspect conv
 
 end
 
