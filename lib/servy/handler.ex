@@ -1,4 +1,6 @@
 defmodule Servy.Handler do
+  @pages_path Path.expand("../../pages", __DIR__)
+
   def handle(request) do
     request
     |> parse
@@ -41,22 +43,25 @@ defmodule Servy.Handler do
   end
 
   def route(%{method: _, path: "/about"} = request_map) do
-      "../../pages"
-      |> Path.expand(__DIR__)
+      @pages_path
       |> Path.join("about.html")
       |> File.read
       |> handle_file(request_map)
   end
 
-  def handle_file({:ok, content}, request_map) do
-      %{request_map | resp_body: content, status: 200}
+  def route(%{method: _, path: path} = request_map) do
+    %{request_map | resp_body: "No resource found at #{path}", status: 404}
   end
 
   def handle_file({:ok, :eoent}, request_map) do
       %{request_map | resp_body: "File not found", status: 404}
   end
 
-  def handle_file({:ok, reason}, request_map) do
+  def handle_file({:ok, content}, request_map) do
+      %{request_map | resp_body: content, status: 200}
+  end
+
+  def handle_file({:error, reason}, request_map) do
       %{request_map | resp_body: "File error: #{reason}", status: 500}
   end
 
@@ -76,10 +81,6 @@ defmodule Servy.Handler do
 #           %{request_map | resp_body: "File error: #{reason}", status: 500}
 #     end
 #   end
-
-  def route(%{method: _, path: path} = request_map) do
-    %{request_map | resp_body: "No resource found at #{path}", status: 404}
-  end
 
   def format_response(resposne_map) do
     """
