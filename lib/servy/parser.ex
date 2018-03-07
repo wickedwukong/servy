@@ -1,13 +1,10 @@
 defmodule Servy.Parser do
   alias Servy.Conv, as: Conv
   def parse(raw_request) do
-    [top|request_params] = String.split(raw_request, "\n\n")
+    [top | request_params] = String.split(raw_request, "\n\n")
 
-    [method, path|_] =
-      top
-      |> String.split("\n")
-      |> List.first
-      |> String.split(" ")
+    [request_line | header_lines] = String.split(top, "\n")
+    [method, path | _] = String.split(request_line, " ")
 
     %Conv{
       method: method,
