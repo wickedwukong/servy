@@ -26,12 +26,18 @@ defmodule Servy.Handler do
     %{request_map | resp_body: "Bear #{id}", status: 200}
   end
 
-  def route(%Conv{method: _, path: "/about"} = request_map) do
+  def route(%Conv{method: "GET", path: "/about"} = request_map) do
       @pages_path
       |> Path.join("about.html")
       |> File.read
       |> handle_file(request_map)
   end
+
+  def route(%Conv{method: "POST", path: "/bears"} = conv) do
+     %{request_params: %{"name" => name}} = conv
+    %{conv | resp_body: "Created a bear called #{name}", status: 201}
+  end
+
 
   def route(%Conv{method: _, path: path} = request_map) do
     %{request_map | resp_body: "No resource found at #{path}", status: 404}
@@ -146,6 +152,21 @@ Host: example.com
 User-Agent: ExampleBrowser/1.0
 Accept: */*
 
+"""
+
+response = Servy.Handler.handle(request)
+
+IO.puts response
+
+request = """
+POST /bears HTTP/1.1
+Host: example.com
+User-Agent: ExampleBrowser/1.0
+Accept: */*
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 21
+
+name=Baloo&type=Brown
 """
 
 response = Servy.Handler.handle(request)
