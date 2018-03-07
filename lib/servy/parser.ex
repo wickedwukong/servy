@@ -24,11 +24,7 @@ defmodule Servy.Parser do
     |> key_value_map
   end
 
-  defp key_value_map(key_values) do
-    key_value_map(key_values, %{})
-  end
-
-  defp key_value_map(key_values, map) do
+  defp key_value_map(key_values, map \\ %{}) do
     case key_values do
       [] -> map
       [[key, value] | tail] -> key_value_map(tail, Map.put(map, key, value))
