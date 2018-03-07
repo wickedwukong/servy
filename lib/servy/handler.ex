@@ -66,13 +66,13 @@ defmodule Servy.Handler do
 #     end
 #   end
 
-  def format_response(resposne_map) do
+  def format_response(%Conv{} = conv) do
     """
-    HTTP/1.1 #{resposne_map.status} #{status_descrition(resposne_map.status)}
+    HTTP/1.1 #{Conv.full_status(conv)} 
     Content-Type: text/html
-    Content-Length: #{String.length(resposne_map.resp_body)}
+    Content-Length: #{String.length(conv.resp_body)}
 
-    #{resposne_map.resp_body}
+    #{conv.resp_body}
     """
   end
 
