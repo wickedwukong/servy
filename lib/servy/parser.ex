@@ -5,11 +5,15 @@ defmodule Servy.Parser do
 
     [request_line | header_lines] = String.split(top, "\n")
     [method, path | _] = String.split(request_line, " ")
+    headers = parse_headers(header_lines)
+
+    IO.inspect headers
 
     %Conv{
       method: method,
       path: path,
-      request_params: params(request_params)
+      request_params: params(request_params),
+      headers: headers
     }
   end
 
@@ -28,4 +32,11 @@ defmodule Servy.Parser do
       [[key, value] | tail] -> key_value_map(tail, Map.put(map, key, value))
     end
   end
+
+  defp parse_headers(header_lines, headers \\ %{})
+  defp parse_headers([], headers), do: headers
+  defp parse_headers([head | tail], headers) do
+    parse_headers(tail, Map.put(headers, Enum.at(String.split(head, ": "),0), Enum.at(String.split(head, ": "),1)))
+  end
+
 end
