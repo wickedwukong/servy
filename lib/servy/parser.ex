@@ -17,10 +17,11 @@ defmodule Servy.Parser do
   end
 
   defp params([""] = request_params), do: %{}
-  defp params([] = request_params), do: %{}
 
   defp params([request_params] = conv) do
-    Enum.map(String.split(request_params, "&"), fn key_value -> String.split(key_value, "=") end)
+    request_params
+    |> String.split("&")
+    |> Enum.map(fn key_value -> String.split(key_value, "=") end)
     |> key_value_map
   end
 
