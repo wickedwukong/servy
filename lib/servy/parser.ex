@@ -1,37 +1,27 @@
 defmodule Servy.Parser do
   alias Servy.Conv, as: Conv
   def parse(raw_request) do
-    [top | request_params] = String.split(raw_request, "\n\n")
+    [top, request_params] = String.split(raw_request, "\n\n")
 
     [request_line | header_lines] = String.split(top, "\n")
     [method, path | _] = String.split(request_line, " ")
-    headers = parse_headers(header_lines)
 
-    IO.inspect headers
+    headers = parse_headers(header_lines)
+    params = parse_params(headers["Content-Type"], request_params)
 
     %Conv{
       method: method,
       path: path,
-      request_params: params(request_params),
+      request_params: params,
       headers: headers
     }
   end
 
-  defp params([""] = request_params), do: %{}
-
-  defp params([request_params] = conv) do
-    request_params
-    |> String.split("&")
-    |> Enum.map(fn key_value -> String.split(key_value, "=") end)
-    |> key_value_map
+  defp parse_params("application/x-www-form-urlencoded", request_params) do
+      request_params |> String.trim |> URI.decode_query
   end
 
-  defp key_value_map(key_values, map \\ %{}) do
-    case key_values do
-      [] -> map
-      [[key, value] | tail] -> key_value_map(tail, Map.put(map, key, value))
-    end
-  end
+  defp parse_params(_, _), do: %{}
 
   defp parse_headers(header_lines, headers \\ %{})
   defp parse_headers([], headers), do: headers
