@@ -2,6 +2,8 @@ defmodule Servy.Handler do
   @pages_path Path.expand("../../pages", __DIR__)
   import Servy.Plugins, only: [rewrite_path: 1, log: 1]
   import Servy.Parser, only: [parse: 1]
+  alias Servy.Conv, as: Conv
+
   def handle(request) do
     request
     |> parse
@@ -11,27 +13,27 @@ defmodule Servy.Handler do
     |> format_response
   end
 
-  def route(%{method: "GET", path: "/wildthings"} = request_map) do
+  def route(%Conv{method: "GET", path: "/wildthings"} = request_map) do
     # Map.put(request_map, :resp_body, "Bears, Lions, Tigers")
     %{request_map | resp_body: "Bears, Lions, Tigers", status: 200}
   end
 
-  def route(%{method: "GET", path: "/bears"} = request_map) do
+  def route(%Conv{method: "GET", path: "/bears"} = request_map) do
     %{request_map | resp_body: "Paddington, Smokey, Teddy", status: 200}
   end
 
-  def route(%{method: "GET", path: "/bears/" <> id} = request_map) do
+  def route(%Conv{method: "GET", path: "/bears/" <> id} = request_map) do
     %{request_map | resp_body: "Bear #{id}", status: 200}
   end
 
-  def route(%{method: _, path: "/about"} = request_map) do
+  def route(%Conv{method: _, path: "/about"} = request_map) do
       @pages_path
       |> Path.join("about.html")
       |> File.read
       |> handle_file(request_map)
   end
 
-  def route(%{method: _, path: path} = request_map) do
+  def route(%Conv{method: _, path: path} = request_map) do
     %{request_map | resp_body: "No resource found at #{path}", status: 404}
   end
 
