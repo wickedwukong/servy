@@ -3,6 +3,7 @@ defmodule Servy.Handler do
   import Servy.Plugins, only: [rewrite_path: 1, log: 1]
   import Servy.Parser, only: [parse: 1]
   alias Servy.Conv, as: Conv
+  alias Servy.BearController
 
   def handle(request) do
     request
@@ -13,24 +14,24 @@ defmodule Servy.Handler do
     |> format_response
   end
 
-  def route(%Conv{method: "GET", path: "/wildthings"} = request_map) do
-    # Map.put(request_map, :resp_body, "Bears, Lions, Tigers")
-    %{request_map | resp_body: "Bears, Lions, Tigers", status: 200}
+  def route(%Conv{method: "GET", path: "/wildthings"} = conv) do
+    # Map.put(conv, :resp_body, "Bears, Lions, Tigers")
+    %{conv | resp_body: "Bears, Lions, Tigers", status: 200}
   end
 
-  def route(%Conv{method: "GET", path: "/bears"} = request_map) do
-    %{request_map | resp_body: "Paddington, Smokey, Teddy", status: 200}
+  def route(%Conv{method: "GET", path: "/bears"} = conv) do
+    BearController.index(conv)
   end
 
-  def route(%Conv{method: "GET", path: "/bears/" <> id} = request_map) do
-    %{request_map | resp_body: "Bear #{id}", status: 200}
+  def route(%Conv{method: "GET", path: "/bears/" <> id} = conv) do
+    %{conv | resp_body: "Bear #{id}", status: 200}
   end
 
-  def route(%Conv{method: "GET", path: "/about"} = request_map) do
+  def route(%Conv{method: "GET", path: "/about"} = conv) do
       @pages_path
       |> Path.join("about.html")
       |> File.read
-      |> handle_file(request_map)
+      |> handle_file(conv)
   end
 
   def route(%Conv{method: "POST", path: "/bears"} = conv) do
@@ -39,23 +40,23 @@ defmodule Servy.Handler do
   end
 
 
-  def route(%Conv{method: _, path: path} = request_map) do
-    %{request_map | resp_body: "No resource found at #{path}", status: 404}
+  def route(%Conv{method: _, path: path} = conv) do
+    %{conv | resp_body: "No resource found at #{path}", status: 404}
   end
 
-  def handle_file({:ok, :eoent}, request_map) do
-      %{request_map | resp_body: "File not found", status: 404}
+  def handle_file({:ok, :eoent}, conv) do
+      %{conv | resp_body: "File not found", status: 404}
   end
 
-  def handle_file({:ok, content}, request_map) do
-      %{request_map | resp_body: content, status: 200}
+  def handle_file({:ok, content}, conv) do
+      %{conv | resp_body: content, status: 200}
   end
 
-  def handle_file({:error, reason}, request_map) do
-      %{request_map | resp_body: "File error: #{reason}", status: 500}
+  def handle_file({:error, reason}, conv) do
+      %{conv | resp_body: "File error: #{reason}", status: 500}
   end
 
-# def route(%{method: _, path: "/about"} = request_map) do
+# def route(%{method: _, path: "/about"} = conv) do
 #     file =
 #       "../../pages"
 #         |> Path.expand(__DIR__)
@@ -63,12 +64,12 @@ defmodule Servy.Handler do
 #
 #     case File.read(file) do
 #       {:ok, content} ->
-#           %{request_map | resp_body: content, status: 200}
+#           %{conv | resp_body: content, status: 200}
 #
 #       {:error, :eoent} ->
-#           %{request_map | resp_body: "File not found", status: 404}
+#           %{conv | resp_body: "File not found", status: 404}
 #       {:error, reason} ->
-#           %{request_map | resp_body: "File error: #{reason}", status: 500}
+#           %{conv | resp_body: "File error: #{reason}", status: 500}
 #     end
 #   end
 
