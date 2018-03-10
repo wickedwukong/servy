@@ -4,6 +4,7 @@ defmodule Servy.BearController do
     items =
       Wildthings.list_bears
       |> Enum.filter(fn(bear) -> bear.type == "Grizzly" end)
+      |> Enum.sort(fn(b1, b2) -> b1.name <= b2.name end)
       |> Enum.map(fn(bear) -> "<li>#{bear.name} - #{bear.type}</li>" end)
       |> Enum.join
 
