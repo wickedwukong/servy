@@ -17,15 +17,26 @@ defmodule Servy.Parser do
     }
   end
 
-  defp parse_params("application/x-www-form-urlencoded", request_params) do
+  @doc """
+  Parses the given param string of the form `key1=value1&key2=value2`
+  into a map with corresponding keys and values.
+
+  ## Examples
+      iex> params_string = "name=Baloo&type=Brown"
+      iex> Servy.Parser.parse_params("application/x-www-form-urlencoded", params_string)
+      %{"name" => "Baloo", "type" => "Brown"}
+      iex> Servy.Parser.parse_params("multipart/form-data", params_string)
+      %{}
+  """
+  def parse_params("application/x-www-form-urlencoded", request_params) do
       request_params |> String.trim |> URI.decode_query
   end
 
-  defp parse_params(_, _), do: %{}
+  def parse_params(_, _), do: %{}
 
-  defp parse_headers(header_lines, headers \\ %{})
-  defp parse_headers([], headers), do: headers
-  defp parse_headers([head | tail], headers) do
+  def parse_headers(header_lines, headers \\ %{})
+  def parse_headers([], headers), do: headers
+  def parse_headers([head | tail], headers) do
     parse_headers(tail, Map.put(headers, Enum.at(String.split(head, ": "),0), Enum.at(String.split(head, ": "),1)))
   end
 
