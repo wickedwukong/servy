@@ -23,11 +23,13 @@ defmodule Servy.BearController do
 
   def show(conv, %{"id" => id}) do
     bear = Wildthings.get_bear(id)
-    
+
     render(conv, "show.eex", bear: bear)
   end
 
   def create(conv, %{"name" => name, "type" => type}) do
-    %{conv | resp_body: "Created a #{type} bear called #{name}", status: 201}
+    %{ conv | status: 201,
+              resp_body: "Created a #{type} bear named #{name}!" }
   end
+
 end
