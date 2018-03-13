@@ -19,6 +19,12 @@ defmodule Servy.Handler do
     %{conv | resp_body: "Bears, Lions, Tigers", status: 200}
   end
 
+  def route(%Conv{method: "GET", path: "/hibernating/" <> time} = conv) do
+    # Map.put(conv, :resp_body, "Bears, Lions, Tigers")
+    time |> String.to_integer() |> :timer.sleep()
+    %{conv | resp_body: "Awake!", status: 200}
+  end
+
   def route(%Conv{method: "GET", path: "/api/bears", } = conv) do
     Servy.Api.BearController.index(conv)
   end

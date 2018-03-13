@@ -6,9 +6,6 @@ defmodule Servy.Parser do
         [top, request] -> {top, request}
         [top] -> {top, nil}
       end
-    IO.puts "here1"
-    IO.inspect request_params
-    IO.puts "here2"
 
     [request_line | header_lines] = String.split(top, "\r\n")
     [method, path | _] = String.split(request_line, " ")
