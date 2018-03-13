@@ -4,6 +4,7 @@ defmodule Servy.Handler do
   import Servy.Parser, only: [parse: 1]
   alias Servy.Conv, as: Conv
   alias Servy.BearController
+  alias Servy.VideoCam
 
   def handle(request) do
     request
@@ -36,6 +37,21 @@ defmodule Servy.Handler do
   def route(%Conv{method: "GET", path: "/bears/" <> id} = conv) do
     params = Map.put(conv.request_params, "id", id)
     BearController.show(conv, params)
+  end
+
+  def route(%Conv{method: "GET", path: "/snapshots"} = conv) do
+    parent_pid = self()
+    spawn(fn -> send(parent_pid, {:result, VideoCam.get_snapshot("cam-1")}) end)
+    spawn(fn -> send(parent_pid, {:result, VideoCam.get_snapshot("cam-2")}) end)
+    spawn(fn -> send(parent_pid, {:result, VideoCam.get_snapshot("cam-3")}) end)
+
+    snapshot1 = receive do {:result, snapshot} -> snapshot end
+    snapshot2 = receive do {:result, snapshot} -> snapshot end
+    snapshot3 = receive do {:result, snapshot} -> snapshot end
+
+    snapshots = [snapshot1, snapshot2, snapshot3]
+
+    %{conv | status: 200, resp_body: inspect snapshots}
   end
 
   def route(%Conv{method: "GET", path: "/about"} = conv) do
