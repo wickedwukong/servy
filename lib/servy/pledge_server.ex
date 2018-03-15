@@ -9,7 +9,7 @@ defmodule Servy.PledgeServer do
 
   def listen_loop(state \\ []) do
     receive do
-      {sender, :create_pledge, name, amount} ->
+      {sender, {:create_pledge, name, amount}} ->
         IO.puts "received a message"
         {:ok, id} =send_pledge_to_service(name, amount)
         most_recent_state = Enum.take(state, 2)
@@ -25,25 +25,25 @@ defmodule Servy.PledgeServer do
         total_pledges = state |> Enum.map(&elem(&1, 1)) |> Enum.sum
         send(sender, {:response, total_pledges})
         listen_loop(state)
+      un_supported -> IO.puts "Unsupported message: #{un_supported}"
     end
   end
 
   def create_pledge(name, amount) do
-    send @name, {self(), :create_pledge, name, amount}
-
-    receive do {:response, id} -> id end
+    call @name, {:create_pledge, name, amount}
   end
 
   def recent_pledges do
-    send @name, {self(), :recent_pledges}
-
-    receive do {:response, pledges} -> pledges end
+    call @name, :recent_pledges
   end
 
   def total_pledges do
-    send @name, {self(), :total_pledges}
+    call @name, :total_pledges
+  end
 
-    receive do {:response, total_pledges} -> total_pledges end
+  def call(pid, message) do
+    send pid, {self(), message}
+    receive do {:response, response} -> response end
   end
 
   defp send_pledge_to_service(_name, _amount) do
