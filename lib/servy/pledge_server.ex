@@ -9,10 +9,13 @@ defmodule Servy.PledgeServer do
 
   def listen_loop(state \\ []) do
     receive do
-      {sender, message} ->
+      {sender, message} when is_pid(sender) ->
         {response, new_state}= handle_call(message, state)
         send sender, {:response, response}
         listen_loop(new_state)
+      un_supported ->
+        IO.puts "Unsupported message: #{un_supported}"
+        listen_loop(state)
     end
   end
 
@@ -22,7 +25,6 @@ defmodule Servy.PledgeServer do
     new_state = [{name, amount} | most_recent_state]
     {id, new_state}
   end
-
 
   def handle_call(:recent_pledges, state) do
     {state, state}
@@ -34,8 +36,7 @@ defmodule Servy.PledgeServer do
   end
 
   def handle_call(un_supported, state) do
-    IO.puts "Unsupported message: #{un_supported}"
-    {state, state}
+    {"Unsupported message: #{un_supported}", state}
   end
 
   def create_pledge(name, amount) do
