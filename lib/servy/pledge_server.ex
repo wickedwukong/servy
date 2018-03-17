@@ -13,6 +13,7 @@ defmodule Servy.PledgeServer do
         {response, new_state}= handle_call(message, state)
         send sender, {:response, response}
         listen_loop(new_state)
+      :clear -> listen_loop([])
       un_supported ->
         IO.puts "Unsupported message: #{un_supported}"
         listen_loop(state)
@@ -51,9 +52,17 @@ defmodule Servy.PledgeServer do
     call @name, :total_pledges
   end
 
+  def clear do
+    cast @name, :clear
+  end
+
   def call(pid, message) do
     send pid, {self(), message}
     receive do {:response, response} -> response end
+  end
+
+  def cast(pid, message) do
+    send pid, message
   end
 
   defp send_pledge_to_service(_name, _amount) do
