@@ -15,6 +15,11 @@ defmodule Servy.PledgeServer do
      {:noreply, %{state | pledges: []}}
   end
 
+  def handle_cast({:set_cache_size, cache_size}, state) do
+   {:noreply, %{state | cache_size: cache_size}}
+  end
+
+
   def handle_call({:create_pledge, name, amount}, _from, state) do
     {:ok, id} =send_pledge_to_service(name, amount)
     most_recent_pledges = Enum.take(state.pledges, state.cache_size - 1)
@@ -31,6 +36,9 @@ defmodule Servy.PledgeServer do
     {:reply, total_pledges, state}
   end
 
+  def set_cache_size(cache_size) when cache_size >= 0 do
+     GenServer.cast @name, {:set_cache_size, cache_size}
+  end
   def create_pledge(name, amount) do
     GenServer.call @name, {:create_pledge, name, amount}
   end
