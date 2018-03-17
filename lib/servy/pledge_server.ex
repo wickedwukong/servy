@@ -42,6 +42,11 @@ defmodule Servy.PledgeServer do
     {:reply, total_pledges, state}
   end
 
+  def handle_info(message, state) do
+    IO.puts "Unsupported message: #{inspect message}"
+    {:noreply, state}
+  end
+
   def set_cache_size(cache_size) when cache_size >= 0 do
      GenServer.cast @name, {:set_cache_size, cache_size}
   end
@@ -75,7 +80,7 @@ end
 
 # {:ok, pid} = PledgeServer.start()
 #
-# send pid, {:stop, "hammertime"}
+# # send pid, {:stop, "hammertime"}
 #
 # IO.inspect PledgeServer.create_pledge("larry", 10)
 # IO.inspect PledgeServer.create_pledge("moe", 20)
