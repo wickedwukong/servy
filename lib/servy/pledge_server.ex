@@ -11,6 +11,12 @@ defmodule Servy.PledgeServer do
     GenServer.start(__MODULE__, %State{}, name: @name)
   end
 
+  def init(state) do
+    pledges = fetch_recent_pledges_from_service()
+    new_state = %{state | pledges: pledges}
+    {:ok, new_state}
+  end
+
   def handle_cast(:clear, state) do
      {:noreply, %{state | pledges: []}}
   end
@@ -57,6 +63,11 @@ defmodule Servy.PledgeServer do
 
   defp send_pledge_to_service(_name, _amount) do
     {:ok, "pledge-#{:rand.uniform(1000)}"}
+  end
+
+  defp fetch_recent_pledges_from_service do
+
+    [{"Tom", 100}, {"Xuemin", 200}]
   end
 end
 
