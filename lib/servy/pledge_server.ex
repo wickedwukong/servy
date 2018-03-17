@@ -3,32 +3,32 @@ defmodule Servy.PledgeServer do
 
   use GenServer
 
-  def start do
-    GenServer.start(__MODULE__, [], name: @name)
+  defmodule State do
+    defstruct [cache_size: 3, pledges: []]
   end
 
-  def handle_cast(:clear, _state) do
-     {:noreply, []}
+  def start do
+    GenServer.start(__MODULE__, %State{}, name: @name)
+  end
+
+  def handle_cast(:clear, state) do
+     {:noreply, %{state | pledges: []}}
   end
 
   def handle_call({:create_pledge, name, amount}, _from, state) do
     {:ok, id} =send_pledge_to_service(name, amount)
-    most_recent_state = Enum.take(state, 2)
-    new_state = [{name, amount} | most_recent_state]
+    most_recent_pledges = Enum.take(state.pledges, 2)
+    new_state = %{state | pledges: [{name, amount} | most_recent_pledges]}
     {:reply, id, new_state}
   end
 
   def handle_call(:recent_pledges, _from, state) do
-    {:reply, state, state}
+    {:reply, state.pledges, state}
   end
 
   def handle_call(:total_pledges, _from, state) do
-    total_pledges = state |> Enum.map(&elem(&1, 1)) |> Enum.sum
+    total_pledges = state.pledges |> Enum.map(&elem(&1, 1)) |> Enum.sum
     {:reply, total_pledges, state}
-  end
-
-  def handle_call(un_supported, _from, state) do
-    {"Unsupported message: #{un_supported}", state}
   end
 
   def create_pledge(name, amount) do
