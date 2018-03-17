@@ -1,4 +1,25 @@
-defmodule GenericServer do
+defmodule Servy.GenericServer do
+
+  def start(initial_state, name, callback) do
+    pid = spawn(__MODULE__, :listen_loop, [initial_state, callback])
+    Process.register(pid, name)
+    pid
+  end
+
+  def listen_loop(state, callback) do
+    receive do
+      {:call, sender, message} when is_pid(sender) ->
+        {response, new_state}= callback.handle_call(message, state)
+        send sender, {:response, response}
+        listen_loop(new_state, callback)
+      {:cast, message} ->
+        new_state = callback.handle_cast(message, state)
+        listen_loop(new_state, callback)
+      un_supported ->
+        IO.puts "Unsupported message: #{inspect un_supported}"
+        listen_loop(state, callback)
+    end
+  end
 
   def call(pid, message) do
     send pid, {:call, self(), message}
@@ -9,28 +30,14 @@ defmodule GenericServer do
     send pid, {:cast, message}
   end
 end
+
 defmodule Servy.PledgeServer do
+  alias Servy.GenericServer
 
   @name :pledge_server
-  def start do
-    pid = spawn(__MODULE__, :listen_loop, [])
-    Process.register(pid, @name)
-    pid
-  end
 
-  def listen_loop(state \\ []) do
-    receive do
-      {:call, sender, message} when is_pid(sender) ->
-        {response, new_state}= handle_call(message, state)
-        send sender, {:response, response}
-        listen_loop(new_state)
-      {:cast, message} ->
-        new_state = handle_cast(message, state)
-        listen_loop(new_state)
-      un_supported ->
-        IO.puts "Unsupported message: #{inspect un_supported}"
-        listen_loop(state)
-    end
+  def start do
+    GenericServer.start([], @name, __MODULE__)
   end
 
   def handle_cast(:clear, _state) do
