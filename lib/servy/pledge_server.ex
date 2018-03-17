@@ -1,3 +1,14 @@
+defmodule GenericServer do
+
+  def call(pid, message) do
+    send pid, {:call, self(), message}
+    receive do {:response, response} -> response end
+  end
+
+  def cast(pid, message) do
+    send pid, {:cast, message}
+  end
+end
 defmodule Servy.PledgeServer do
 
   @name :pledge_server
@@ -47,28 +58,19 @@ defmodule Servy.PledgeServer do
   end
 
   def create_pledge(name, amount) do
-    call @name, {:create_pledge, name, amount}
+    GenericServer.call @name, {:create_pledge, name, amount}
   end
 
   def recent_pledges do
-    call @name, :recent_pledges
+    GenericServer.call @name, :recent_pledges
   end
 
   def total_pledges do
-    call @name, :total_pledges
+    GenericServer.call @name, :total_pledges
   end
 
   def clear do
-    cast @name, :clear
-  end
-
-  def call(pid, message) do
-    send pid, {:call, self(), message}
-    receive do {:response, response} -> response end
-  end
-
-  def cast(pid, message) do
-    send pid, {:cast, message}
+    GenericServer.cast @name, :clear
   end
 
   defp send_pledge_to_service(_name, _amount) do
@@ -87,7 +89,7 @@ end
 # IO.inspect PledgeServer.create_pledge("curly", 30)
 # IO.inspect PledgeServer.create_pledge("daisy", 40)
 
-# #PledgeServerHand.clear()
+# #PledgeServer.clear()
 
 # IO.inspect PledgeServer.create_pledge("grace", 50)
 
