@@ -1,6 +1,6 @@
 defmodule Servy.GenericServer do
 
-  def start(initial_state, name, callback) do
+  def start(callback, initial_state, name) do
     pid = spawn(__MODULE__, :listen_loop, [initial_state, callback])
     Process.register(pid, name)
     pid
@@ -37,7 +37,7 @@ defmodule Servy.PledgeServer do
   @name :pledge_server
 
   def start do
-    GenericServer.start([], @name, __MODULE__)
+    GenericServer.start(__MODULE__, [], @name)
   end
 
   def handle_cast(:clear, _state) do
