@@ -17,7 +17,7 @@ defmodule Servy.PledgeServer do
 
   def handle_call({:create_pledge, name, amount}, _from, state) do
     {:ok, id} =send_pledge_to_service(name, amount)
-    most_recent_pledges = Enum.take(state.pledges, 2)
+    most_recent_pledges = Enum.take(state.pledges, state.cache_size - 1)
     new_state = %{state | pledges: [{name, amount} | most_recent_pledges]}
     {:reply, id, new_state}
   end
