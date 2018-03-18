@@ -8,6 +8,7 @@ defmodule Servy.KickStarter do
 
   def init(state) do
     IO.puts "Starting http server"
+    Process.flag(:trap_exit, true)
     http_server_pid = spawn(Servy.HttpServer, :start, [4000])
     Process.link(http_server_pid)
     Process.register(http_server_pid, :http_server)
