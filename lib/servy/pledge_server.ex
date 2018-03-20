@@ -8,7 +8,7 @@ defmodule Servy.PledgeServer do
   end
 
   def start_link(_args) do
-    IO.puts "Start the PledgeServer"
+    IO.puts "Starting the PledgeServer"
     GenServer.start_link(__MODULE__, %State{}, name: @name)
   end
 
